@@ -1,14 +1,14 @@
 import React, { useState } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
-import { email } from 'zod';
-import { RegisterScheme } from "../libr/register.scheme"; // adjust path
+import { RegisterScheme } from "../libr/register.scheme";
 import Feedback from '../components/Feedback';
 import { addUser } from '../APIs/Register.api';
-import { tr } from 'zod/v4/locales';
+import { useNavigate } from 'react-router-dom';
 
 
 export default function Register() {
+  const navigate = useNavigate()
   const [error,setErorr]=useState('')
   const [loading,setLoading]=useState(false)
 
@@ -30,13 +30,20 @@ export default function Register() {
   async function onSubmit(data) {
     setLoading(true)
     try {
-      const res = await addUser(data)
+      const res = await addUser({
+        name: data.name,
+        email: data.email,
+        password: data.password,
+        rePassword: data.rePassword,
+        gender: data.gender,
+        dateOfBirth: data.dateOfBirth
+      })
       setLoading(false)
       setErorr('')
-
+      navigate('/')
     } catch (error) {
       setLoading(false)
-      setErorr(error?.response?.data?.error);
+      setErorr(error?.response?.data?.message || error?.response?.data?.error || 'Registration failed');
     }
   }
 
@@ -110,7 +117,7 @@ export default function Register() {
 
 
 
-      <button onSubmit={onSubmit} className='bg-blue-700 rounded-xl px-4 py-2 cursor-pointer text-white'>Register</button>
+      <button type="submit" disabled={loading} className='bg-blue-700 rounded-xl px-4 py-2 cursor-pointer text-white disabled:opacity-60'>{loading ? 'Registering...' : 'Register'}</button>
 
     </form>
 
